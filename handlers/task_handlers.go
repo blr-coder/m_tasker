@@ -50,6 +50,49 @@ func GetTask(db interfaces.TaskInterface) http.HandlerFunc {
 	}
 }
 
+func AllTasks(db interfaces.TaskInterface) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+
+		res, err := db.List()
+		if err != nil {
+			WriteResponse(writer, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		WriteResponse(writer, http.StatusOK, res)
+	}
+}
+
+func DoneTask(db interfaces.TaskInterface) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		params := mux.Vars(request)
+		id := params["id"]
+
+		res, err := db.Done(id)
+		if err != nil {
+			WriteResponse(writer, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		WriteResponse(writer, http.StatusOK, res)
+	}
+}
+
+func DeleteTask(db interfaces.TaskInterface) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		params := mux.Vars(request)
+		id := params["id"]
+
+		res, err := db.Delete(id)
+		if err != nil {
+			WriteResponse(writer, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		WriteResponse(writer, http.StatusOK, res)
+	}
+}
+
 func WriteResponse(w http.ResponseWriter, status int, res interface{}) {
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(status)

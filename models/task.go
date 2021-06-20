@@ -6,3 +6,9 @@ type Task struct {
 	Description string `json:"description" bson:"description"`
 	Done        bool   `json:"done" bson:"done"`
 }
+
+type Tasks []Task
+
+type TaskDelete struct {
+	DeletedCount int64 `json:"deleted_count"`
+}
