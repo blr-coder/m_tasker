@@ -9,6 +9,12 @@ type Task struct {
 
 type Tasks []Task
 
+type TaskFilter struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Done        *bool  `json:"done"`
+}
+
 type TaskDelete struct {
 	DeletedCount int64 `json:"deleted_count"`
 }

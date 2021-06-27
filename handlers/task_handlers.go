@@ -5,7 +5,9 @@ import (
 	"github.com/blr-coder/m_tasker/interfaces"
 	"github.com/blr-coder/m_tasker/models"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/schema"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -54,6 +56,27 @@ func AllTasks(db interfaces.TaskInterface) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 
 		res, err := db.List()
+		if err != nil {
+			WriteResponse(writer, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		WriteResponse(writer, http.StatusOK, res)
+	}
+}
+
+func AllTasksWithFilter(db interfaces.TaskInterface) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+
+		var decoder = schema.NewDecoder()
+
+		var taskFilter models.TaskFilter
+		err := decoder.Decode(&taskFilter, request.URL.Query())
+		if err != nil {
+			log.Println("Error in GET parameters : ", err)
+		}
+
+		res, err := db.Search(&taskFilter)
 		if err != nil {
 			WriteResponse(writer, http.StatusBadRequest, err.Error())
 			return
