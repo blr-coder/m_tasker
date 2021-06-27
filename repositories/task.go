@@ -36,9 +36,7 @@ func (c *TaskClient) Get(id string) (task models.Task, err error) {
 }
 
 func (c *TaskClient) List() (tasks models.Tasks, err error) {
-	filter := bson.M{}
-
-	cursor, err := c.Collection.Find(c.Ctx, filter)
+	cursor, err := c.Collection.Find(c.Ctx, bson.M{})
 	if err != nil {
 		return tasks, err
 	}
@@ -47,6 +45,24 @@ func (c *TaskClient) List() (tasks models.Tasks, err error) {
 		task := models.Task{}
 		_ = cursor.Decode(&task)
 
+		tasks = append(tasks, task)
+	}
+
+	return tasks, nil
+}
+
+func (c *TaskClient) Search(filter *models.TaskFilter) (tasks models.Tasks, err error) {
+	cursor, err := c.Collection.Aggregate(c.Ctx, c.filterToPipeline(filter))
+	if err != nil {
+		return tasks, err
+	}
+
+	for cursor.Next(c.Ctx) {
+		task := models.Task{}
+		err = cursor.Decode(&task)
+		if err != nil {
+			return tasks, err
+		}
 		tasks = append(tasks, task)
 	}
 
@@ -92,3 +108,19 @@ func (c *TaskClient) Delete(id string) (models.TaskDelete, error) {
 
 	return deleted, nil
 }
+
+
+func (c *TaskClient) filterToPipeline(filter *models.TaskFilter) (pipeline mongo.Pipeline) {
+	if filter.Title != "" {
+		pipeline = append(pipeline, bson.D{{Key: "$match", Value: bson.M{"title": filter.Title}}})
+	}
+	if filter.Description != "" {
+		pipeline = append(pipeline, bson.D{{Key: "$match", Value: bson.M{"description": filter.Description}}})
+	}
+	if filter.Done != nil {
+		pipeline = append(pipeline, bson.D{{Key: "$match", Value: bson.M{"done": filter.Done}}})
+	}
+
+	return pipeline
+}
+
