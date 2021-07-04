@@ -2,16 +2,17 @@ package database
 
 import (
 	"context"
+	"github.com/blr-coder/m_tasker/configs"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func ConnectDB(ctx context.Context) *mongo.Database {
-	connection := options.Client().ApplyURI("mongodb://localhost:27017")
+func ConnectDB(ctx context.Context, config configs.MongoDatabaseConfig) *mongo.Database {
+	connection := options.Client().ApplyURI(config.Server)
 	client, err := mongo.Connect(ctx, connection)
 	if err != nil {
 		panic(err)
 	}
 
-	return client.Database("learn_mongo")
+	return client.Database(config.Name)
 }

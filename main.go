@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/blr-coder/m_tasker/configs"
 	"github.com/blr-coder/m_tasker/database"
 	"github.com/blr-coder/m_tasker/handlers"
 	"github.com/blr-coder/m_tasker/repositories"
@@ -15,8 +16,9 @@ func main() {
 
 	ctx := context.TODO()
 
-	db := database.ConnectDB(ctx)
-	collection := db.Collection("tasks")
+	appConfig := configs.NewConfig()
+	db := database.ConnectDB(ctx, *appConfig)
+	collection := db.Collection(appConfig.Collection)
 
 	client := &repositories.TaskClient{
 		Ctx:        ctx,
@@ -29,7 +31,7 @@ func main() {
 	router.HandleFunc("/tasks", handlers.AllTasksWithFilter(client)).Methods(http.MethodGet)
 	router.HandleFunc("/tasks/{id}", handlers.GetTask(client)).Methods(http.MethodGet)
 	router.HandleFunc("/tasks/{id}/done", handlers.DoneTask(client)).Methods(http.MethodPatch)
-	//router.HandleFunc("/tasks/{id}", handlers.UpdateTask(client)).Methods(http.MethodPut)
+	router.HandleFunc("/tasks/{id}", handlers.UpdateTask(client)).Methods(http.MethodPut)
 	router.HandleFunc("/tasks/{id}", handlers.DeleteTask(client)).Methods(http.MethodDelete)
 	_ = http.ListenAndServe(":8090", router)
 }

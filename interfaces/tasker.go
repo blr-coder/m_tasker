@@ -8,5 +8,6 @@ type TaskInterface interface {
 	List() (models.Tasks, error)
 	Search(filter *models.TaskFilter) (models.Tasks, error)
 	Done(id string) (models.Task, error)
+	Update(id string, task *models.Task) (models.Task, error)
 	Delete(id string) (models.TaskDelete, error)
 }

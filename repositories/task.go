@@ -89,6 +89,29 @@ func (c *TaskClient) Done(id string) (models.Task, error) {
 	return c.Get(id)
 }
 
+func (c *TaskClient) Update(id string, task *models.Task) (models.Task, error) {
+	_id, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return models.Task{}, err
+	}
+
+	filter := bson.M{"_id": _id}
+	update := bson.M{
+		"$set": bson.M{
+			"title":       task.Title,
+			"description": task.Description,
+			"done":        task.Done,
+		},
+	}
+
+	err = c.Collection.FindOneAndUpdate(c.Ctx, filter, update).Err()
+	if err != nil {
+		return models.Task{}, err
+	}
+
+	return c.Get(id)
+}
+
 func (c *TaskClient) Delete(id string) (models.TaskDelete, error) {
 	deleted := models.TaskDelete{
 		DeletedCount: 0,
@@ -109,7 +132,6 @@ func (c *TaskClient) Delete(id string) (models.TaskDelete, error) {
 	return deleted, nil
 }
 
-
 func (c *TaskClient) filterToPipeline(filter *models.TaskFilter) (pipeline mongo.Pipeline) {
 	if filter.Title != "" {
 		pipeline = append(pipeline, bson.D{{Key: "$match", Value: bson.M{"title": filter.Title}}})
@@ -123,4 +145,3 @@ func (c *TaskClient) filterToPipeline(filter *models.TaskFilter) (pipeline mongo
 
 	return pipeline
 }
-

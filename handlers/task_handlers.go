@@ -101,6 +101,36 @@ func DoneTask(db interfaces.TaskInterface) http.HandlerFunc {
 	}
 }
 
+func UpdateTask(db interfaces.TaskInterface) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		params := mux.Vars(request)
+		id := params["id"]
+
+		task := models.Task{}
+
+		body, err := ioutil.ReadAll(request.Body)
+		if err != nil {
+			writer.WriteHeader(http.StatusBadRequest)
+			writer.Write([]byte(err.Error()))
+		}
+
+		err = json.Unmarshal(body, &task)
+		if err != nil {
+			writer.WriteHeader(http.StatusBadRequest)
+			writer.Write([]byte(err.Error()))
+		}
+
+		res, err := db.Update(id, &task)
+		if err != nil {
+			WriteResponse(writer, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		WriteResponse(writer, http.StatusOK, res)
+
+	}
+}
+
 func DeleteTask(db interfaces.TaskInterface) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		params := mux.Vars(request)
